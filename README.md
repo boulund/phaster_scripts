@@ -1,5 +1,7 @@
 # PHASTER scripts
-Small utility scripts to query the PHASTER API endpoint.
+Small utility scripts to query the [PHASTER](http://phaster.ca/)
+[API](http://phaster.ca/instructions#urlapi) endpoint, to identify and annotate
+prophage sequences within bacterial genomes and plasmids.
 
 Run the script without arguments or with `-h`/`--help` to see a list of
 available options.  The script creates a small local database in a tab
