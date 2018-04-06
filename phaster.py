@@ -17,7 +17,7 @@ def parse_args():
     desc = __doc__ + " " + __author__ + " (c) " + __date__ + "."
     parser = argparse.ArgumentParser(description=desc)
     
-    parser.add_argument("-f", "--fasta", metavar="FILE",
+    parser.add_argument("-f", "--fasta", metavar="FILE", dest="fasta",
             default="",
             help="FASTA file with genome sequence")
     parser.add_argument("-c", "--contigs", dest="contigs", action="store_true",
@@ -59,7 +59,7 @@ def read_database(database):
     if os.path.isfile(database):
         with open(database) as f:
             for line in f:
-                filename, job_id, status, date = line.split("\t")
+                filename, job_id, status, date = line.strip().split("\t")
                 db[job_id] = (filename, status, date)
         logging.debug("Read %s existing entries from %s", len(db), database)
     else:
@@ -83,14 +83,15 @@ def submit_job(fasta_file, api_endpoint, options):
 
     r = requests.post(api_endpoint, files=files, data=options)
 
-    if r.status_code != "200":
-        raise IOError("Submission failed: {}".format(r.status_code))
+    if r.status_code != 200:
+        logging.error("Submission of %s failed!", fasta_file)
+        logging.error(r.text)
         return "Failed", "Submission failed", datetime.datetime.now()
+    logging.info("Submission of %s appears successful", fasta_file)
 
-    print("Post request response code:", r.status_code)
     r_dict = r.json()
     for key, value in r_dict.items():
-        print("  {}: {}".format(key, value))
+        logging.info("  {}: {}".format(key, value))
     return r_dict["job_id"], r_dict["status"], datetime.datetime.now()
 
 
@@ -106,10 +107,10 @@ def get_status(accession, api_endpoint, query_filename):
 
     r_dict = r.json()
     job_status = r_dict["status"]
-    if "submissions ahead of yours" in r_dict["status"]:    
-        logging.info("Job %s still waiting...", accession)
+    if "submissions ahead of yours" in job_status:
+        logging.info("Job %s still waiting: %s", accession, job_status)
     elif "Running" in r_dict["status"]:
-        logging.info("Job %s currently running...", accession)
+        logging.info("Job %s currently running: %s", accession, job_status)
     elif "zip" in r_dict:
         logging.info("Job %s appears to be finished!", accession)
         try:
@@ -153,10 +154,12 @@ if __name__ == "__main__":
     db = read_database(options.database)
 
     if options.fasta:
-        job_id, status, date = submit_job(options.FASTA, options.url, {"contigs": int(options.contigs)})
-        db[job_id] = (options.FASTA, status, date)
+        job_id, status, date = submit_job(options.fasta, options.url, {"contigs": int(options.contigs)})
+        db[job_id] = (options.fasta, status, date)
     elif options.get_status:
         for job_id, (filename, status, date) in db.items():
+            if job_id == "Failed":
+                continue
             output_filename = os.path.basename(filename)
             job_id, status, date = get_status(job_id, options.url, output_filename)
             db[job_id] = (filename, status, date)
