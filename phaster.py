@@ -44,7 +44,7 @@ def parse_args():
 
     options = parser.parse_args()
 
-    logfmt = "%(asctime)s %(levelname)s:%(message)s"
+    logfmt = "%(asctime)s %(levelname)s: %(message)s"
     if options.loglevel == "INFO":
         logging.basicConfig(format=logfmt, level=logging.INFO)
     elif options.loglevel == "DEBUG":
@@ -61,10 +61,11 @@ def read_database(database):
             for line in f:
                 filename, job_id, status, date = line.split("\t")
                 db[job_id] = (filename, status, date)
+        logging.debug("Read %s existing entries from %s", len(db), database)
     else:
-        with open(database, 'w') as f:
-            pass
-    logging.debug("Read %s existing entries from %s", len(db), database)
+        logging.debug("Database %s does not exists, creating...", database)
+        open(database, 'w').close()
+        logging.debug("Created empty database %s", database)
     return db
 
 
