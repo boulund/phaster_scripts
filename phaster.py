@@ -18,7 +18,7 @@ def parse_args():
     desc = __doc__ + " " + __author__ + " (c) " + __date__ + "."
     parser = argparse.ArgumentParser(description=desc)
     
-    parser.add_argument("-f", "--fasta", metavar="FILE", dest="fasta",
+    parser.add_argument("-f", "--fasta", metavar="FILE", dest="fasta", nargs="+",
             default="",
             help="FASTA file with genome sequence")
     parser.add_argument("-c", "--contigs", dest="contigs", action="store_true",
@@ -83,7 +83,7 @@ def write_database(db, database_file):
 def submit_job(fasta_file, api_endpoint, options):
     """Submit fasta_file."""
 
-    files = {"post-file": open(fasta_file, 'rb')}
+    files = {"post-file": open(os.path.abspath(fasta_file), 'rb')}
 
     r = requests.post(api_endpoint, files=files, data=options)
 
@@ -158,8 +158,10 @@ if __name__ == "__main__":
     db = read_database(options.database)
 
     if options.fasta:
-        job_id, status, date = submit_job(options.fasta, options.url, {"contigs": int(options.contigs)})
-        db[job_id] = (options.fasta, status, date)
+        for fasta in options.fasta:
+            job_id, status, date = submit_job(fasta, options.url, {"contigs": int(options.contigs)})
+            db[job_id] = (fasta, status, date)
+            time.sleep(options.wait)
     elif options.get_status:
         for job_id, (filename, status, date) in db.items():
             if job_id == "Failed":
