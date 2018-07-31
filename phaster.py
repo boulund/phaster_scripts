@@ -8,6 +8,7 @@ import os
 import argparse
 import logging
 import datetime
+import time
  
 import requests
 
@@ -33,6 +34,9 @@ def parse_args():
     parser.add_argument("-u", "--url", dest="url",
             default="http://phaster.ca/phaster_api",
             help="URL to API endpoint [%(default)s].")
+    parser.add_argument("-w", "--wait", metavar="W", dest="wait",
+            default=10,
+            help="Wait for W seconds between each API request [%(default)s].")
     parser.add_argument("--loglevel", 
             choices=["DEBUG", "INFO"],
             default="INFO",
@@ -163,5 +167,6 @@ if __name__ == "__main__":
             output_filename = os.path.basename(filename)
             job_id, status, date = get_status(job_id, options.url, output_filename)
             db[job_id] = (filename, status, date)
+            time.sleep(options.wait)
     write_database(db, options.database)
 
