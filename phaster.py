@@ -102,7 +102,7 @@ def get_status(accession, api_endpoint, query_filename):
     r = requests.get(api_endpoint, params=payload)
 
     if r.status_code != 200:
-        log.error("Get request for job id %s failed", accession)
+        logging.error("Get request for status of job id %s failed", accession)
         return accession, "Get request failed", datetime.datetime.now()
 
     r_dict = r.json()
