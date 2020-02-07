@@ -82,10 +82,9 @@ def write_database(db, database_file):
 
 def submit_job(fasta_file, api_endpoint, options):
     """Submit fasta_file."""
+    data = open(os.path.abspath(fasta_file), 'rb').read()
 
-    files = {"post-file": open(os.path.abspath(fasta_file), 'rb')}
-
-    r = requests.post(api_endpoint, files=files, data=options)
+    r = requests.post(api_endpoint, data=data, headers={'Content-Type': 'application/octet-stream'}, data=options)
 
     if r.status_code != 200:
         logging.error("Submission of %s failed!", fasta_file)
