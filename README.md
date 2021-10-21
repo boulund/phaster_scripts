@@ -10,6 +10,10 @@ recent API query attempt, along with the last observed job status for each
 submitted file. The name of the database file can be modified with the
 `-d`/`--database` argument.
 
+**WARNING**: The "database" this script uses is a simple TSV file and the
+script cannot operate with several running instances against the same database
+file. Avoid running this script in parallel.
+
 
 ## Submit a job with a single complete genome sequence
 It is very simple to submit a single complete genome sequence to PHASTER using
