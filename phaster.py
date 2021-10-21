@@ -84,7 +84,7 @@ def submit_job(fasta_file, api_endpoint, options):
     """Submit fasta_file."""
     data = open(os.path.abspath(fasta_file), 'rb').read()
 
-    r = requests.post(api_endpoint, data=data, headers={'Content-Type': 'application/octet-stream'}, data=options)
+    r = requests.post(api_endpoint, data=data, headers={'Content-Type': 'application/octet-stream'})
 
     if r.status_code != 200:
         logging.error("Submission of %s failed!", fasta_file)
